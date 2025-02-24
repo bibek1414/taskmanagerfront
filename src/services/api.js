@@ -9,7 +9,12 @@ export const getAuthorizationHeader = () => {
 
 const handleResponse = async (response) => {
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
     throw new Error(errorData.detail || 'An error occurred');
   }
   return response.json();
@@ -17,42 +22,79 @@ const handleResponse = async (response) => {
 
 const api = {
   testConnection: async () => {
-    const response = await fetch(`${API_URL}/api/test`);
-    return handleResponse(response);
+    try {
+      const response = await fetch(`${API_URL}/api/test`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return handleResponse(response);
+    } catch (error) {
+      console.error('Test connection error:', error);
+      return { status: 'error', message: error.message };
+    }
   },
   
   auth: {
     login: async (emailOrUsername, password) => {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ emailOrUsername, password }),
-      });
-      return handleResponse(response);
+      try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',  // Changed from 'include' to 'omit' for cross-origin requests
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ emailOrUsername, password }),
+        });
+        return handleResponse(response);
+      } catch (error) {
+        console.error('Login fetch error:', error);
+        throw error;
+      }
     },
     
     register: async (userData) => {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-      return handleResponse(response);
+      try {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',  // Changed from 'include' to 'omit'
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+        return handleResponse(response);
+      } catch (error) {
+        console.error('Registration fetch error:', error);
+        throw error;
+      }
     },
   },
   
   tasks: {
     getTasks: async (params = {}) => {
       const query = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_URL}/api/tasks?${query}`, {
-        headers: getAuthorizationHeader(),
-      });
-      return handleResponse(response);
+      try {
+        const response = await fetch(`${API_URL}/api/tasks?${query}`, {
+          method: 'GET',
+          mode: 'cors',
+          headers: {
+            ...getAuthorizationHeader(),
+            'Content-Type': 'application/json',
+          },
+        });
+        return handleResponse(response);
+      } catch (error) {
+        console.error('Get tasks error:', error);
+        throw error;
+      }
     },
+    
+    // Add other task methods with similar error handling
   },
 };
 
