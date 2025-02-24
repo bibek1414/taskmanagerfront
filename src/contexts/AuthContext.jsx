@@ -4,6 +4,11 @@ import { useToast } from '@/components/ui/use-toast';
 
 const AuthContext = createContext({});
 
+// Define the API base URL based on environment
+const API_URL = import.meta.env.MODE === 'development' 
+  ? 'http://localhost:8000' 
+  : 'https://taskmangerback.onrender.com';
+
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -22,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (emailOrUsername, password) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,9 +66,10 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
+
   const register = async (userData) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +80,7 @@ export const AuthProvider = ({ children }) => {
   
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Registration failed:", errorData);  // Log the error for debugging
+        console.error("Registration failed:", errorData);
         throw new Error(errorData.detail || 'Registration failed');
       }
   
@@ -92,6 +98,7 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
