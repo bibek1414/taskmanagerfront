@@ -1,108 +1,59 @@
-// src/services/api.js
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_URL = isLocalhost 
-  ? 'http://localhost:8000' 
-  : 'https://taskmangerback.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL;
 
 console.log(`API Service using URL: ${API_URL}`);
 
 export const getAuthorizationHeader = () => {
   const token = localStorage.getItem('token');
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 const handleResponse = async (response) => {
   if (!response.ok) {
-    let errorMessage = 'API request failed';
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.detail || errorMessage;
-    } catch (e) {
-      console.error('Error parsing error response:', e);
-    }
-    throw new Error(errorMessage);
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'An error occurred');
   }
   return response.json();
 };
 
 const api = {
   testConnection: async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/test`, {
-        method: 'GET',
-        mode: 'cors'
-      });
-      return handleResponse(response);
-    } catch (error) {
-      console.error('Connection test error:', error);
-      throw error;
-    }
+    const response = await fetch(`${API_URL}/api/test`);
+    return handleResponse(response);
   },
   
   auth: {
     login: async (emailOrUsername, password) => {
-      try {
-        const response = await fetch(`${API_URL}/api/auth/login`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ emailOrUsername, password }),
-        });
-        
-        return handleResponse(response);
-      } catch (error) {
-        console.error('Login error in API service:', error);
-        throw error;
-      }
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emailOrUsername, password }),
+      });
+      return handleResponse(response);
     },
     
     register: async (userData) => {
-      try {
-        const response = await fetch(`${API_URL}/api/auth/register`, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
-        });
-        
-        return handleResponse(response);
-      } catch (error) {
-        console.error('Registration error in API service:', error);
-        throw error;
-      }
-    }
+      const response = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      return handleResponse(response);
+    },
   },
   
   tasks: {
     getTasks: async (params = {}) => {
-      const queryParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, value);
-        }
+      const query = new URLSearchParams(params).toString();
+      const response = await fetch(`${API_URL}/api/tasks?${query}`, {
+        headers: getAuthorizationHeader(),
       });
-      
-      try {
-        const response = await fetch(`${API_URL}/api/tasks?${queryParams}`, {
-          mode: 'cors',
-          headers: {
-            ...getAuthorizationHeader(),
-          },
-        });
-        
-        return handleResponse(response);
-      } catch (error) {
-        console.error('Get tasks error:', error);
-        throw error;
-      }
+      return handleResponse(response);
     },
-    
-    // Add other task-related methods here
-  }
+  },
 };
 
 export default api;
