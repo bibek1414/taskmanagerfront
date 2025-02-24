@@ -11,4 +11,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'), // This sets up the alias for @ to map to the src folder
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://taskmangerback.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }
 });

@@ -25,6 +25,9 @@ import { Badge } from "../ui/Badge";
 import { MoreVertical, Edit, Trash2, CheckCircle, Circle } from 'lucide-react';
 import TaskForm from './TaskForm';
 
+// Get API URL from your environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const TaskList = ({ tasks = [], onUpdateTask, onDeleteTask }) => {
   const [editingTask, setEditingTask] = useState(null);
 

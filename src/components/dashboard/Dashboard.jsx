@@ -13,6 +13,10 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { useToast } from "../ui/use-toast";
 import debounce from 'lodash/debounce';
+import api from '../../services/api';  // Import your API service
+
+// Get API URL from your environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -35,7 +39,7 @@ const Dashboard = () => {
   const fetchTasks = async (currentFilter) => {
     setLoading(true);
     try {
-      let url = `http://localhost:8000/api/tasks?page=${pagination.page}&limit=${pagination.limit}`;
+      let url = `${API_URL}/api/tasks?page=${pagination.page}&limit=${pagination.limit}`;
       if (currentFilter.category) url += `&category=${currentFilter.category}`;
       if (currentFilter.priority) url += `&priority=${currentFilter.priority}`;
       if (currentFilter.completed) url += `&completed=${currentFilter.completed === 'true'}`;
@@ -56,6 +60,7 @@ const Dashboard = () => {
       setTasks(data.tasks);
       setPagination(prev => ({ ...prev, total: data.total }));
     } catch (error) {
+      console.error('Error fetching tasks:', error);
       toast({
         title: "Error",
         description: "Failed to fetch tasks. Please try again.",
@@ -93,7 +98,7 @@ const Dashboard = () => {
 
   const handleCreateTask = async (taskData) => {
     try {
-      const response = await fetch('http://localhost:8000/api/tasks', {
+      const response = await fetch(`${API_URL}/api/tasks`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`,
@@ -115,6 +120,7 @@ const Dashboard = () => {
       });
       fetchTasks(filter);
     } catch (error) {
+      console.error('Error creating task:', error);
       toast({
         title: "Error",
         description: "Failed to create task. Please try again.",
@@ -125,7 +131,7 @@ const Dashboard = () => {
 
   const handleUpdateTask = async (taskId, taskData) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${user.token}`,
@@ -147,6 +153,7 @@ const Dashboard = () => {
         description: "Task updated successfully!",
       });
     } catch (error) {
+      console.error('Error updating task:', error);
       toast({
         title: "Error",
         description: "Failed to update task. Please try again.",
@@ -157,7 +164,7 @@ const Dashboard = () => {
 
   const handleDeleteTask = async (taskId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/tasks/${taskId}`, {
+      const response = await fetch(`${API_URL}/api/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user.token}`,
@@ -175,6 +182,7 @@ const Dashboard = () => {
         description: "Task deleted successfully!",
       });
     } catch (error) {
+      console.error('Error deleting task:', error);
       toast({
         title: "Error",
         description: "Failed to delete task. Please try again.",
@@ -202,7 +210,7 @@ const Dashboard = () => {
             <Button onClick={logout} variant="outline">Logout</Button>
           </div>
           <CardDescription>
-            Welcome back, {user.email}! Manage your tasks and stay organized.
+            Welcome back! Manage your tasks and stay organized.
           </CardDescription>
         </CardHeader>
         <CardContent>

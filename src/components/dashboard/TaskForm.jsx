@@ -7,6 +7,9 @@ import { Textarea } from '../ui/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/Select';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '../ui/Form';
 
+// Get API URL from your environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const TaskForm = ({ onSubmit, onCancel, initialData }) => {
   const form = useForm({
     defaultValues: initialData || {
